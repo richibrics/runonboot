@@ -34,19 +34,23 @@ class bootonmacOS(bootonPlatform):
         """Get the folder where the launch agents are stored on macOS.
            If user_only is True, the user's folder is returned. Otherwise, the system's folder is returned."""
         if user_only == True:
-            return "~/Library/LaunchAgents"
+            return os.path.expanduser("~/Library/LaunchAgents")
         return "/Library/LaunchDaemons"
     
-    def getRunnerFilename(runner: Runner, user_only=True):
+    def getRunnerFilename(runnerName, user_only=True):
         """Get the filename of a runner on macOS, based on the runner's name and the type of folder to use."""
-        return os.path.join(bootonmacOS.getAgentsFolder(user_only), runner.getName() + ".plist")
+        return os.path.join(bootonmacOS.getAgentsFolder(user_only), runnerName + ".plist")
     
     def createRunnerFile(runner: Runner, user_only=True):
         """Create a runner file on macOS."""
         runnerFilename = bootonmacOS.getRunnerFilename(runner.getName(), user_only)
-        runnerFile = open(runnerFilename, "w")
-        runnerFile.write(plistlib.writePlistToString(bootonmacOS.getRunnerPlist(runner)))
-        runnerFile.close()
+                
+        # Python 3.9+ only supports the dump() method, so we need to check for it.
+        if hasattr(plistlib, 'dump'):
+            with open(runnerFilename, "wb") as runnerFile:
+                plistlib.dump(bootonmacOS.makeRunnerPlist(runner), runnerFile)
+        else:
+            plistlib.writePlist(bootonmacOS.makeRunnerPlist(runner, runnerFile))
         
     def makeRunnerPlist(runner: Runner):
         """Create a runner plist in macOS LaunchAgents standard."""
