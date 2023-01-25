@@ -1,0 +1,30 @@
+[project]
+name = "runonboot"
+version = "2023.1.1"
+description = "Python cross-platform tool to install agents to run commands, scripts, softwares on boot"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+keywords = ["python"]
+authors = [
+  {name = "richibrics", email = "riccardo.briccola@mail.polimi.it"},
+]
+maintainers = [
+  {name = "richibrics", email = "riccardo.briccola@mail.polimi.it"}
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python",
+]
+dependencies = [
+  "plistlib"
+]
+
+[project.urls]
+homepage = "https://github.com/richibrics/runonboot"
+documentation = "https://github.com/richibrics/runonboot"
+repository = "https://github.com/richibrics/runonboot"
+changelog = "https://github.com/richibrics/runonboot/commits/main"
+
+[build-system]
+requires = ["setuptools", "wheel"]
