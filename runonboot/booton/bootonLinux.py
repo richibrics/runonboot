@@ -1,7 +1,7 @@
 from .bootonPlatform import bootonPlatform
 
 class bootonLinux(bootonPlatform):
-    def installRunner(runner):
+    def installRunner(runner, user_only=True):
         pass
     
     def removeRunner(runnerName):

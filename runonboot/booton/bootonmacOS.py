@@ -4,11 +4,28 @@ from .bootonPlatform import bootonPlatform
 from runonboot import Runner
 
 class bootonmacOS(bootonPlatform):
-    def installRunner(runner):
+    def installRunner(runner, user_only=True):
         """Install a runner on macOS."""
         if bootonmacOS.isRunnerInstalled(runner.getName()):
             raise Exception("Runner already installed")
-        bootonmacOS.createRunnerFile(runner)
+        
+        if user_only or bootonmacOS.checkIfSudoMode(): # then has rights in any case
+            newRunnerPosition = bootonmacOS.getRunnerFilename(runner.getName(), user_only)
+            bootonmacOS.createRunnerFile(runner, newRunnerPosition)
+        else:
+            # get rights to write in non user only folder
+            # need to use sudo command in shell in order to make appear the sudo password input on the terminal
+            
+            # Steps:
+            # 1. Create a temporary file with the runner's content
+            # 2. Use sudo to move the file to the system's LaunchDaemons folder
+            tmpRunnerPosition = os.path.join(os.path.expanduser("~"), runner.getName() + ".booton")
+            finalRunnerPosition = bootonmacOS.getRunnerFilename(runner.getName(), user_only) # user only should be false here
+
+            # Write on the temporary file
+            bootonmacOS.createRunnerFile(runner, tmpRunnerPosition)
+            # Move the file to the system's LaunchDaemons folder
+            os.system(f"sudo mv \"{tmpRunnerPosition}\" \"{finalRunnerPosition}\"")
     
     def removeRunner(runnerName):
         """Remove a runner on macOS."""
@@ -22,11 +39,15 @@ class bootonmacOS(bootonPlatform):
             if position == "user":
                 os.remove(bootonmacOS.getRunnerFilename(runnerName, True))
             elif position == "system":
-                os.remove(bootonmacOS.getRunnerFilename(runnerName, False))
+                if bootonmacOS.checkIfSudoMode():
+                    os.remove(bootonmacOS.getRunnerFilename(runnerName, False))
+                else: 
+                    # use sudo command in shell in order to make appear the sudo password input on the terminal
+                    os.system(f"sudo rm \"{bootonmacOS.getRunnerFilename(runnerName, False)}\"")
     
     def isRunnerInstalled(runnerName):
         """Check if a runner is installed on macOS."""
-        if os.path.exists(bootonmacOS.getRunnerFilename(runnerName, True)) or os.path.exists(bootonmacOS.getRunnerFilename(runnerName)):
+        if os.path.exists(bootonmacOS.getRunnerFilename(runnerName, True)) or os.path.exists(bootonmacOS.getRunnerFilename(runnerName, False)):
             return True
         return False
     
@@ -41,16 +62,15 @@ class bootonmacOS(bootonPlatform):
         """Get the filename of a runner on macOS, based on the runner's name and the type of folder to use."""
         return os.path.join(bootonmacOS.getAgentsFolder(user_only), runnerName + ".plist")
     
-    def createRunnerFile(runner: Runner, user_only=True):
+    def createRunnerFile(runner: Runner, filePath):
         """Create a runner file on macOS."""
-        runnerFilename = bootonmacOS.getRunnerFilename(runner.getName(), user_only)
                 
         # Python 3.9+ only supports the dump() method, so we need to check for it.
         if hasattr(plistlib, 'dump'):
-            with open(runnerFilename, "wb") as runnerFile:
+            with open(filePath, "wb") as runnerFile:
                 plistlib.dump(bootonmacOS.makeRunnerPlist(runner), runnerFile)
         else:
-            plistlib.writePlist(bootonmacOS.makeRunnerPlist(runner, runnerFile))
+            plistlib.writePlist(bootonmacOS.makeRunnerPlist(runner), filePath)
         
     def makeRunnerPlist(runner: Runner):
         """Create a runner plist in macOS LaunchAgents standard."""
@@ -59,3 +79,8 @@ class bootonmacOS(bootonPlatform):
             "ProgramArguments": runner.getCommand().split(" "),
             "RunAtLoad": True
         }
+        
+    def checkIfSudoMode():
+        """Check if the script is running in sudo mode on macOS.
+           Check needed because if the script is not running in sudo mode, it will not be able to write to the system's LaunchDaemons folder."""
+        return os.geteuid() == 0
