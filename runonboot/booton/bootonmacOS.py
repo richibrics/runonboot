@@ -19,7 +19,8 @@ class bootonmacOS(bootonPlatform):
             # Steps:
             # 1. Create a temporary file with the runner's content
             # 2. Use sudo to move the file to the system's LaunchDaemons folder
-            tmpRunnerPosition = os.path.join(os.path.expanduser("~"), runner.getName() + ".booton")
+            scriptFolder = os.path.dirname(os.path.realpath(__file__))
+            tmpRunnerPosition = os.path.join(scriptFolder, runner.getName() + ".booton")
             finalRunnerPosition = bootonmacOS.getRunnerFilename(runner.getName(), user_only) # user only should be false here
 
             # Write on the temporary file
@@ -36,7 +37,8 @@ class bootonmacOS(bootonPlatform):
         if os.path.exists(bootonmacOS.getRunnerFilename(runnerName, True)):
             position = "user"
         elif os.path.exists(bootonmacOS.getRunnerFilename(runnerName, False)):
-            position = "system"
+        # TODO check if path exists even if no rights to list files there, so need to use superuser
+            position = "system" 
         
         if position == "user":
             os.remove(bootonmacOS.getRunnerFilename(runnerName, True))

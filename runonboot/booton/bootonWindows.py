@@ -62,6 +62,5 @@ class bootonWindows(bootonPlatform):
         from win32com.shell import shell, shellcon 
         return shell.SHGetFolderPath(0, (shellcon.CSIDL_STARTUP, shellcon.CSIDL_COMMON_STARTUP)[mode], None, 0)
 
-    
     def disclaimer() -> str:
         return ""
