@@ -29,22 +29,25 @@ class bootonmacOS(bootonPlatform):
     
     def removeRunner(runnerName):
         """Remove a runner on macOS."""
+        if not bootonmacOS.isRunnerInstalled(runnerName):
+            raise Exception("Runner is not installed")
+        
         position = None
         if os.path.exists(bootonmacOS.getRunnerFilename(runnerName, True)):
             position = "user"
         elif os.path.exists(bootonmacOS.getRunnerFilename(runnerName, False)):
             position = "system"
         
-        if position is not None:
-            if position == "user":
-                os.remove(bootonmacOS.getRunnerFilename(runnerName, True))
-            elif position == "system":
-                if bootonmacOS.checkIfSudoMode():
-                    os.remove(bootonmacOS.getRunnerFilename(runnerName, False))
-                else: 
-                    # use sudo command in shell in order to make appear the sudo password input on the terminal
-                    os.system(f"sudo rm \"{bootonmacOS.getRunnerFilename(runnerName, False)}\"")
+        if position == "user":
+            os.remove(bootonmacOS.getRunnerFilename(runnerName, True))
+        elif position == "system":
+            if bootonmacOS.checkIfSudoMode():
+                os.remove(bootonmacOS.getRunnerFilename(runnerName, False))
+            else: 
+                # use sudo command in shell in order to make appear the sudo password input on the terminal
+                os.system(f"sudo rm \"{bootonmacOS.getRunnerFilename(runnerName, False)}\"")
     
+    # TODO check if path exists even if no rights to list files there, so need to use superuser
     def isRunnerInstalled(runnerName):
         """Check if a runner is installed on macOS."""
         if os.path.exists(bootonmacOS.getRunnerFilename(runnerName, True)) or os.path.exists(bootonmacOS.getRunnerFilename(runnerName, False)):
@@ -84,3 +87,6 @@ class bootonmacOS(bootonPlatform):
         """Check if the script is running in sudo mode on macOS.
            Check needed because if the script is not running in sudo mode, it will not be able to write to the system's LaunchDaemons folder."""
         return os.geteuid() == 0
+    
+    def disclaimer() -> str:
+        return "If your command doesn't work, check in Settings -> Login Items if the command is enabled correctly there."

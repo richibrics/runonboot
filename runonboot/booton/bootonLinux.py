@@ -10,3 +10,5 @@ class bootonLinux(bootonPlatform):
     def isRunnerInstalled(runnerName):
         pass
     
+    def disclaimer() -> str:
+        return ""

@@ -16,7 +16,13 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Programming Language :: Python",
 ]
+
 dependencies = [
+]
+
+[project.optional-dependencies]
+win = [
+  "pywin32"
 ]
 
 [project.urls]

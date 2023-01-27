@@ -1,12 +1,67 @@
+import os
 from .bootonPlatform import bootonPlatform
 
+# Windows runs on boot all the executable files in the Startup folder.
+# Since it's not convenient to create an executable file for each runner, 
+# we will create a simple BAT file, which is still executable for windows.
 class bootonWindows(bootonPlatform):
     def installRunner(runner, user_only=True):
-        pass
+        """Install a runner to run on boot on Windows."""
+        if bootonWindows.isRunnerInstalled(runner.getName()):
+            raise Exception("Runner already installed")
+        
+        if user_only:
+            newRunnerPosition = bootonWindows.getRunnerFilename(runner.getName(), True)
+            bootonWindows.createRunnerFile(runner, newRunnerPosition)
+        else:
+            raise Exception("Not implemented yet") # TODO Windows install in not user only mode
     
     def removeRunner(runnerName):
-        pass
+        """Remove a runner from running on boot."""
+        if not bootonWindows.isRunnerInstalled(runnerName):
+            raise Exception("Runner is not installed")
+    
+        # Check where it is installed
+        position = None
+        if os.path.exists(bootonWindows.getRunnerFilename(runnerName, True)):
+            position = "user"
+        else:
+            raise Exception("Not implemented yet") # TODO Windows remove in not user only mode
+        #elif os.path.exists(bootonWindows.getRunnerFilename(runnerName, False)):
+        #    position = "common"
+    
+        if position == "user":
+            os.remove(bootonWindows.getRunnerFilename(runnerName, True))
+        
     
     def isRunnerInstalled(runnerName):
-        pass
+        """Check if a runner is installed to run on boot."""
+        # Check bot in user only folder and all users folder
+        if os.path.exists(bootonWindows.getRunnerFilename(runnerName, True)) or os.path.exists(bootonWindows.getRunnerFilename(runnerName, False)):
+            return True
+        return False
     
+    def createRunnerFile(runner, position):
+        """Create a runner file at the given position for Windows."""
+        with open(position, "w") as runnerFile:
+            runnerFile.write(bootonWindows.makeBatContent(runner))
+    
+    def makeBatContent(runner) -> str:
+        """Make the content of a BAT file for the given runner."""
+        return runner.getCommand()
+    
+    def getRunnerFilename(runnerName, user_only=True):
+        """Get the file name of a runner file for Windows.
+           If user_only is True, with the user's folder is returned. Otherwise, with the all users' folder is returned."""
+        return os.path.join(bootonWindows.getAgentsFolder(user_only), runnerName + ".bat")
+    
+    def getAgentsFolder(user_only=True):
+        """Get the folder where the startup files are stored on Windows.
+           If user_only is True, the user's folder is returned. Otherwise, the all users' folder is returned."""
+        mode = 0 if user_only else 1
+        from win32com.shell import shell, shellcon 
+        return shell.SHGetFolderPath(0, (shellcon.CSIDL_STARTUP, shellcon.CSIDL_COMMON_STARTUP)[mode], None, 0)
+
+    
+    def disclaimer() -> str:
+        return ""
