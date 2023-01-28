@@ -44,6 +44,7 @@ class bootonWindows(bootonPlatform):
     def isRunnerInstalled(runnerName):
         """Check if a runner is installed to run on boot."""
         # Check bot in user only folder and all users folder
+        # Common path is always readable in Windows (not writeable)
         if os.path.exists(bootonWindows.getRunnerFilename(runnerName, True)) or os.path.exists(bootonWindows.getRunnerFilename(runnerName, False)):
             return True
         return False

@@ -65,14 +65,10 @@ CloseHandle.restype = BOOL
 
 
 class uacHelper():
-
     def elevate(command):
         """Using UAC, run the given command."""
         if windll.shell32.IsUserAnAdmin():
             return
-
-        print(sys.executable)
-        print(command)
 
         params = ShellExecuteInfo(
             fMask=SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE,
@@ -92,15 +88,12 @@ class uacHelper():
         if windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(ret)) == 0:
             raise ctypes.WinError()
 
-#        CloseHandle(handle)
- #       sys.exit(ret.value)
-
     def moveFile(src, dst):
         """Move a file from src to dst using UAC."""
         # Call the elevate command, passing the command to run the helper to move the file
-        uacHelper.elevate("-c \"import os; os.rename(r'" + src + "', r'" + dst + "')\"")
+        uacHelper.elevate(f'-c "import runonboot; runonboot.helper.moveFile()" "{src}" "{dst}"')
 
     def deleteFile(filename):
         """Move a file from src to dst using UAC."""
         # Call the elevate command, passing the command to run the helper to delete the file
-        uacHelper.elevate("-c \"import os; os.remove(r'" + filename + "')\"")
+        uacHelper.elevate(f'-c "import runonboot; runonboot.helper.removeFile()" "{filename}"')
