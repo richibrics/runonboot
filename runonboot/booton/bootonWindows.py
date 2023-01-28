@@ -14,6 +14,13 @@ class bootonWindows(bootonPlatform):
             newRunnerPosition = bootonWindows.getRunnerFilename(runner.getName(), True)
             bootonWindows.createRunnerFile(runner, newRunnerPosition)
         else:
+            # Save the bat file in a temp position and use cmd command with runas to move the file
+            # in the final position using admin rights (this avoids UAC implementation)
+            scriptFolder = os.path.dirname(os.path.realpath(__file__))
+            tmpRunnerPosition = os.path.join(scriptFolder, runner.getName() + ".booton")
+            finalRunnerPosition = bootonWindows.getRunnerFilename(runner.getName(), False)
+            bootonWindows.createRunnerFile(runner, tmpRunnerPosition)
+
             raise Exception("Not implemented yet") # TODO Windows install in not user only mode
     
     def removeRunner(runnerName):
@@ -59,8 +66,19 @@ class bootonWindows(bootonPlatform):
         """Get the folder where the startup files are stored on Windows.
            If user_only is True, the user's folder is returned. Otherwise, the all users' folder is returned."""
         mode = 0 if user_only else 1
-        from win32com.shell import shell, shellcon 
-        return shell.SHGetFolderPath(0, (shellcon.CSIDL_STARTUP, shellcon.CSIDL_COMMON_STARTUP)[mode], None, 0)
+        try:
+            from win32com.shell import shell, shellcon 
+            return shell.SHGetFolderPath(0, (shellcon.CSIDL_STARTUP, shellcon.CSIDL_COMMON_STARTUP)[mode], None, 0)
+        except:
+            try:
+                # use fallback system
+                if user_only:
+                    return os.path.join(os.environ['USERPROFILE'], 'AppData', 'Roaming', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup')
+                else:
+                    return os.path.join(os.environ['PROGRAMDATA'], 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'StartUp')
+            except:
+                raise Exception("Can't get Startup folder path.")
+
 
     def disclaimer() -> str:
         return ""
