@@ -1,5 +1,6 @@
 import os
-from .bootonPlatform import bootonPlatform
+from ..bootonPlatform import bootonPlatform
+from .uacHelper import uacHelper
 
 # Windows runs on boot all the executable files in the Startup folder.
 # Since it's not convenient to create an executable file for each runner, 
@@ -20,8 +21,7 @@ class bootonWindows(bootonPlatform):
             tmpRunnerPosition = os.path.join(scriptFolder, runner.getName() + ".booton")
             finalRunnerPosition = bootonWindows.getRunnerFilename(runner.getName(), False)
             bootonWindows.createRunnerFile(runner, tmpRunnerPosition)
-
-            raise Exception("Not implemented yet") # TODO Windows install in not user only mode
+            uacHelper.moveFile(tmpRunnerPosition, finalRunnerPosition)
     
     def removeRunner(runnerName):
         """Remove a runner from running on boot."""
@@ -32,13 +32,13 @@ class bootonWindows(bootonPlatform):
         position = None
         if os.path.exists(bootonWindows.getRunnerFilename(runnerName, True)):
             position = "user"
-        else:
-            raise Exception("Not implemented yet") # TODO Windows remove in not user only mode
-        #elif os.path.exists(bootonWindows.getRunnerFilename(runnerName, False)):
-        #    position = "common"
-    
+        elif os.path.exists(bootonWindows.getRunnerFilename(runnerName, False)):
+            position = "common"
+        
         if position == "user":
             os.remove(bootonWindows.getRunnerFilename(runnerName, True))
+        elif position == "common":
+            uacHelper.deleteFile(bootonWindows.getRunnerFilename(runnerName, False))
         
     
     def isRunnerInstalled(runnerName):
@@ -66,16 +66,25 @@ class bootonWindows(bootonPlatform):
         """Get the folder where the startup files are stored on Windows.
            If user_only is True, the user's folder is returned. Otherwise, the all users' folder is returned."""
         mode = 0 if user_only else 1
+        path = None
         try:
             from win32com.shell import shell, shellcon 
-            return shell.SHGetFolderPath(0, (shellcon.CSIDL_STARTUP, shellcon.CSIDL_COMMON_STARTUP)[mode], None, 0)
+            path = shell.SHGetFolderPath(0, (shellcon.CSIDL_STARTUP, shellcon.CSIDL_COMMON_STARTUP)[mode], None, 0)
+            if os.path.exists(path) and os.path.isdir(path):
+                return path
+            else:
+                raise Exception("The startup path found is invalid")
         except:
             try:
                 # use fallback system
                 if user_only:
-                    return os.path.join(os.environ['USERPROFILE'], 'AppData', 'Roaming', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup')
+                    path = os.path.join(os.environ['USERPROFILE'], 'AppData', 'Roaming', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup')
                 else:
-                    return os.path.join(os.environ['PROGRAMDATA'], 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'StartUp')
+                    path = os.path.join(os.environ['PROGRAMDATA'], 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'StartUp')
+                if os.path.exists(path) and os.path.isdir(path):
+                    return path
+                else:
+                    raise Exception("The startup path found is invalid")
             except:
                 raise Exception("Can't get Startup folder path.")
 
