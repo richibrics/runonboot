@@ -60,7 +60,7 @@ class bootonWindows(bootonPlatform):
     
     def makeBatContent(runner: Runner) -> str:
         """Make the content of a BAT file for the given runner."""
-        return runner.getCommand()
+        return runner.getCommand() + " " + " ".join(runner.getArgs())
     
     def getRunnerFilename(runnerName, user_only=True):
         """Get the file name of a runner file for Windows.

@@ -79,9 +79,14 @@ class bootonmacOS(bootonPlatform):
         
     def makeRunnerPlist(runner: Runner):
         """Create a runner plist in macOS LaunchAgents standard."""
+        
+        args = []
+        args.append(runner.getCommand().replace(" ", "\ "))
+        args.extend(runner.getArgs())
+        
         return {
             "Label": runner.getName(),
-            "ProgramArguments": runner.getCommand().split(" "),
+            "ProgramArguments": args,
             "RunAtLoad": True
         }
         
@@ -91,4 +96,4 @@ class bootonmacOS(bootonPlatform):
         return os.geteuid() == 0
     
     def disclaimer() -> str:
-        return "If your command doesn't work, check in Settings -> Login Items if the command is enabled correctly there."
+        return "-- If your command doesn't work, check in Settings -> Login Items if the command is correctly enabled there --"
