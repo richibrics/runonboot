@@ -1,7 +1,10 @@
 import os
+import platform
 from runonboot.runner.Runner import Runner
 from ..bootonPlatform import bootonPlatform
-from .uacHelper import uacHelper
+
+if platform.system() == "Windows":  
+    from .uacHelper import uacHelper
 
 # Windows runs on boot all the executable files in the Startup folder.
 # Since it's not convenient to create an executable file for each runner, 
