@@ -1,4 +1,5 @@
 from .bootonPlatform import bootonPlatform
+from runonboot.runner.Runner import Runner
 
 class bootonLinux(bootonPlatform):
     def installRunner(runner, user_only=True):

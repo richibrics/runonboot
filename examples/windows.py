@@ -1,8 +1,9 @@
 import runonboot
+from runonboot.runner.Runner import Runner
 import time
 
 if __name__ == "__main__":
-    r = runonboot.Runner("test", "test")
+    r = Runner("test", "test")
     print("runner status: " + str(runonboot.isRunnerInstalled("test")))
     print("Installing runner...")
     runonboot.installRunner(r, user_only=False)

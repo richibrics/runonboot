@@ -1,6 +1,6 @@
 import platform
 from .booton import bootonLinux, bootonmacOS, bootonWindows, bootonPlatform
-from runonboot import Runner
+from runonboot.runner.Runner import Runner
 
 def installRunner(runner: Runner, user_only=True):
     """Install a runner to run on boot.

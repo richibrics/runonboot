@@ -1,11 +1,12 @@
 import os
 from .bootonPlatform import bootonPlatform
+from runonboot.runner.Runner import Runner
 
 # Windows runs on boot all the executable files in the Startup folder.
 # Since it's not convenient to create an executable file for each runner, 
 # we will create a simple BAT file, which is still executable for windows.
 class bootonWindows(bootonPlatform):
-    def installRunner(runner, user_only=True):
+    def installRunner(runner: Runner, user_only=True):
         """Install a runner to run on boot on Windows."""
         if bootonWindows.isRunnerInstalled(runner.getName()):
             raise Exception("Runner already installed")
@@ -48,12 +49,12 @@ class bootonWindows(bootonPlatform):
             return True
         return False
     
-    def createRunnerFile(runner, position):
+    def createRunnerFile(runner: Runner, position):
         """Create a runner file at the given position for Windows."""
         with open(position, "w") as runnerFile:
             runnerFile.write(bootonWindows.makeBatContent(runner))
     
-    def makeBatContent(runner) -> str:
+    def makeBatContent(runner: Runner) -> str:
         """Make the content of a BAT file for the given runner."""
         return runner.getCommand()
     

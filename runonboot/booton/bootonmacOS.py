@@ -1,7 +1,7 @@
 import plistlib
 import os
 from .bootonPlatform import bootonPlatform
-from runonboot import Runner
+from runonboot.runner.Runner import Runner
 
 class bootonmacOS(bootonPlatform):
     def installRunner(runner, user_only=True):
